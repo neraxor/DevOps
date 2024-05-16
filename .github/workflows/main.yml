@@ -20,13 +20,13 @@ jobs:
         dotnet-version: '8.0.x'
 
     - name: Restore dependencies
-      run: dotnet restore DevOps.sln
+      run: dotnet restore ./DevOps/DevOps.sln
 
     - name: Build
-      run: dotnet build DevOps.sln --no-restore
+      run: dotnet build ./DevOps/DevOps.sln --no-restore
 
     - name: Run tests
-      run: dotnet test DevOps.sln --no-build --verbosity normal
+      run: dotnet test ./DevOps/DevOps.sln --no-build --verbosity normal
 
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v2
@@ -40,8 +40,8 @@ jobs:
     - name: Build and push Docker image
       uses: docker/build-push-action@v4
       with:
-        context: ./devops
-        file: ./devops/Dockerfile
+        context: ./DevOps
+        file: ./DevOps/Dockerfile
         push: true
         tags: ${{ secrets.DOCKER_HUB_USERNAME }}/devops:latest
 
