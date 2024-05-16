@@ -57,6 +57,7 @@ jobs:
         echo "Portainer JWT: $JWT"
         echo $JWT > portainer.jwt
 
+
     - name: Debug Portainer Stack IDs
       run: |
         echo "Fetching stacks from Portainer..."
@@ -80,6 +81,10 @@ jobs:
 
     - name: Restart Portainer stack (if needed)
       run: |
+        echo "Restarting stack with ID from file..."
+        STACK_ID=$(cat stack_id.txt)
         echo "Restarting stack with ID: $STACK_ID"
-        RESTART_RESPONSE=$(curl -s -X POST -H "Authorization: Bearer $(cat portainer.jwt)" -H "Content-Type: application/json" ${{ secrets.PORTAINER_URL }}/api/stacks/${STACK_ID}/restart)
+        RESTART_URL="${{ secrets.PORTAINER_URL }}/api/endpoints/2/docker/containers/${STACK_ID}/restart"
+        echo "Restart URL: $RESTART_URL"
+        RESTART_RESPONSE=$(curl -s -X POST -H "Authorization: Bearer $(cat portainer.jwt)" $RESTART_URL)
         echo "Restart Response: $RESTART_RESPONSE"
