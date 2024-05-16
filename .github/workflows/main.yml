@@ -60,7 +60,7 @@ jobs:
         STACK_ID=$(echo $STACKS | jq -r '.[] | select(.Name=="devops-stack") | .Id')
         echo "Stack ID: $STACK_ID"
 
-    - name: Update Portainer stack
+    - name: Update Portainer stack test
       run: |
         STACK_ID=$(curl -s -H "Authorization: Bearer $(cat portainer.jwt)" ${{ secrets.PORTAINER_URL }}/api/stacks | jq -r '.[] | select(.Name=="devops-stack") | .Id')
         echo "Updating stack with ID: $STACK_ID"
