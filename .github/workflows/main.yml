@@ -47,12 +47,21 @@ jobs:
 
     - name: Log out from Docker Hub
       run: docker logout
-      
+        
     - name: Log in to Portainer
       run: |
         curl -s -X POST -d "username=${{ secrets.PORTAINER_USERNAME }}&password=${{ secrets.PORTAINER_PASSWORD }}" ${{ secrets.PORTAINER_URL }}/api/auth | jq -r .jwt > portainer.jwt
+        echo "Portainer JWT: $(cat portainer.jwt)"
+
+    - name: Debug Portainer Stack IDs
+      run: |
+        STACKS=$(curl -s -H "Authorization: Bearer $(cat portainer.jwt)" ${{ secrets.PORTAINER_URL }}/api/stacks)
+        echo "Stacks: $STACKS"
+        STACK_ID=$(echo $STACKS | jq -r '.[] | select(.Name=="devops-stack") | .Id')
+        echo "Stack ID: $STACK_ID"
 
     - name: Update Portainer stack
       run: |
         STACK_ID=$(curl -s -H "Authorization: Bearer $(cat portainer.jwt)" ${{ secrets.PORTAINER_URL }}/api/stacks | jq -r '.[] | select(.Name=="devops-stack") | .Id')
+        echo "Updating stack with ID: $STACK_ID"
         curl -s -X PUT -H "Authorization: Bearer $(cat portainer.jwt)" -H "Content-Type: application/json" --data '{"Prune":true}' ${{ secrets.PORTAINER_URL }}/api/stacks/${STACK_ID}/update
