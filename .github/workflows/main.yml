@@ -51,7 +51,7 @@ jobs:
     - name: Log in to Portainer
       run: |
         echo "Logging in to Portainer..."
-        AUTH_RESPONSE=$(curl -s -X POST -d "username=${{ secrets.PORTAINER_USERNAME }}&password=${{ secrets.PORTAINER_PASSWORD }}" ${{ secrets.PORTAINER_URL }}/api/auth)
+        AUTH_RESPONSE=$(curl -s -X POST -H "Content-Type: application/json" -d '{"username":"${{ secrets.PORTAINER_USERNAME }}","password":"${{ secrets.PORTAINER_PASSWORD }}"}' ${{ secrets.PORTAINER_URL }}/api/auth)
         echo "Auth Response: $AUTH_RESPONSE"
         JWT=$(echo $AUTH_RESPONSE | jq -r .jwt)
         echo "Portainer JWT: $JWT"
