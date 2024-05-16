@@ -1,0 +1,8 @@
+﻿version: '3.8'
+
+services:
+  devops:
+    image: neraxor/devops:latest
+    ports:
+      - "8080:80"
+    restart: always
