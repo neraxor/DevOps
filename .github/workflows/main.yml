@@ -47,8 +47,8 @@ jobs:
 
     - name: Log out from Docker Hub
       run: docker logout
-        
-  - name: Log in to Portainer
+ 
+    - name: Log in to Portainer
       run: |
         echo "Logging in to Portainer..."
         AUTH_RESPONSE=$(curl -s -X POST -d "username=${{ secrets.PORTAINER_USERNAME }}&password=${{ secrets.PORTAINER_PASSWORD }}" ${{ secrets.PORTAINER_URL }}/api/auth)
