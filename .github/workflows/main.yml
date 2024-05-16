@@ -1,9 +1,10 @@
-name: Build and Push Docker image
+name: .NET CI and Docker Build
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
 jobs:
   build-and-push:
@@ -12,6 +13,20 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v2
+      with:
+        dotnet-version: '8.0.x'
+
+    - name: Restore dependencies
+      run: dotnet restore DevOps.sln
+
+    - name: Build
+      run: dotnet build DevOps.sln --no-restore
+
+    - name: Run tests
+      run: dotnet test DevOps.sln --no-build --verbosity normal
 
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v2
