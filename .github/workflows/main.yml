@@ -71,7 +71,7 @@ jobs:
         echo "Updating stack with ID from file..."
         STACK_ID=$(cat stack_id.txt)
         echo "Updating stack with ID: $STACK_ID"
-        UPDATE_URL="${{ secrets.PORTAINER_URL }}/api/stacks/${STACK_ID}/stackfile"
+        UPDATE_URL="${{ secrets.PORTAINER_URL }}/api/stacks/${STACK_ID}"
         echo "Update URL: $UPDATE_URL"
         COMPOSE_FILE_CONTENT=$(cat docker-compose.yml | sed 's/"/\\"/g' | sed 's/$/\\n/' | tr -d '\n')
         echo "Updating stack with new Docker Compose file content..."
