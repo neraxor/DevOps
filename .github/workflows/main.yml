@@ -58,16 +58,6 @@ jobs:
         echo "Portainer JWT: $JWT"
         echo $JWT > portainer.jwt
 
-
-    - name: Debug Portainer Stack IDs
-      run: |
-        echo "Fetching stacks from Portainer..."
-        RESPONSE=$(curl -s -H "Authorization: Bearer $(cat portainer.jwt)" ${{ secrets.PORTAINER_URL }}/api/stacks)
-        echo "Response: $RESPONSE"
-        STACK_ID=$(echo $RESPONSE | jq -r '.[] | select(.Name=="devops-stack") | .Id')
-        echo "Stack ID: $STACK_ID"
-        echo $STACK_ID > stack_id.txt
-
     - name: Update Portainer stack
       run: |
         echo "Updating stack with ID from file..."
