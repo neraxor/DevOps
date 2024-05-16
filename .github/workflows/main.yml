@@ -67,9 +67,8 @@ jobs:
 
     - name: Update Portainer stack
       run: |
-        STACK_ID=$(curl -s -H "Authorization: Bearer $(cat portainer.jwt)" ${{ secrets.PORTAINER_URL }}/api/stacks | jq -r '.[] | select(.Name=="devops-stack") | .Id')
         echo "Updating stack with ID: $STACK_ID"
         UPDATE_URL="${{ secrets.PORTAINER_URL }}/api/stacks/${STACK_ID}/update"
         echo "Update URL: $UPDATE_URL"
-        UPDATE_RESPONSE=$(curl -s -X PUT -H "Authorization: Bearer $(cat portainer.jwt)" -H "Content-Type: application/json" --data '{"Prune":true}' $UPDATE_URL)
+        UPDATE_RESPONSE=$(curl -v -X PUT -H "Authorization: Bearer $(cat portainer.jwt)" -H "Content-Type: application/json" --data '{"Prune":true}' $UPDATE_URL)
         echo "Update Response: $UPDATE_RESPONSE"
