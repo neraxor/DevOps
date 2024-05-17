@@ -48,40 +48,33 @@ jobs:
 
     - name: Log out from Docker Hub
       run: docker logout
- 
+
     - name: Log in to Portainer
+      id: portainer-login
       run: |
         echo "Logging in to Portainer..."
         AUTH_RESPONSE=$(curl -s -X POST -H "Content-Type: application/json" -d '{"username":"${{ secrets.PORTAINER_USERNAME }}","password":"${{ secrets.PORTAINER_PASSWORD }}"}' ${{ secrets.PORTAINER_URL }}/api/auth)
-        echo "Auth Response: $AUTH_RESPONSE"
-        JWT=$(echo $AUTH_RESPONSE | jq -r .jwt)
-        echo "Portainer JWT: $JWT"
-        echo $JWT > portainer.jwt
-    - name: Debug Portainer Stack IDs
+        echo "::set-output name=jwt::$(echo $AUTH_RESPONSE | jq -r .jwt)"
+
+    - name: Get Portainer Stack ID
+      id: get-stack-id
       run: |
         echo "Fetching stacks from Portainer..."
-        RESPONSE=$(curl -s -H "Authorization: Bearer $(cat portainer.jwt)" ${{ secrets.PORTAINER_URL }}/api/stacks)
-        echo "Response: $RESPONSE"
+        RESPONSE=$(curl -s -H "Authorization: Bearer ${{ steps.portainer-login.outputs.jwt }}" ${{ secrets.PORTAINER_URL }}/api/stacks)
         STACK_ID=$(echo $RESPONSE | jq -r '.[] | select(.Name=="devops-stack") | .Id')
-        echo "Stack ID: $STACK_ID"
-        echo $STACK_ID > stack_id.txt
+        echo "::set-output name=stack_id::$STACK_ID"
+
     - name: Update Portainer stack
       run: |
-        echo "Updating stack with ID from file..."
-        STACK_ID=$(cat stack_id.txt)
-        echo "Updating stack with ID: $STACK_ID"
-        UPDATE_URL="${{ secrets.PORTAINER_URL }}/api/stacks/${STACK_ID}?endpointId=2"
-        echo "Update URL: $UPDATE_URL"
+        echo "Updating stack with ID: ${{ steps.get-stack-id.outputs.stack_id }}"
+        UPDATE_URL="${{ secrets.PORTAINER_URL }}/api/stacks/${{ steps.get-stack-id.outputs.stack_id }}?endpointId=2"
         COMPOSE_FILE_CONTENT=$(cat docker-compose.yml | sed 's/"/\\"/g' | sed 's/$/\\n/' | tr -d '\n')
-        echo "Updating stack with new Docker Compose file content..."
-        UPDATE_RESPONSE=$(curl -s -X PUT -H "Authorization: Bearer $(cat portainer.jwt)" -H "Content-Type: application/json" --data "{\"StackFileContent\": \"${COMPOSE_FILE_CONTENT}\"}" $UPDATE_URL)
+        UPDATE_RESPONSE=$(curl -s -X PUT -H "Authorization: Bearer ${{ steps.portainer-login.outputs.jwt }}" -H "Content-Type: application/json" --data "{\"StackFileContent\": \"${COMPOSE_FILE_CONTENT}\"}" $UPDATE_URL)
         echo "Update Response: $UPDATE_RESPONSE"
-    - name: Restart Portainer stack (if needed)
+
+    - name: Restart Portainer stack
       run: |
-        echo "Restarting stack with ID from file..."
-        STACK_ID=$(cat stack_id.txt)
-        echo "Restarting stack with ID: $STACK_ID"
-        RESTART_URL="${{ secrets.PORTAINER_URL }}/api/endpoints/2/docker/containers/${STACK_ID}/restart"
-        echo "Restart URL: $RESTART_URL"
-        RESTART_RESPONSE=$(curl -s -X POST -H "Authorization: Bearer $(cat portainer.jwt)" $RESTART_URL)
+        echo "Restarting stack with ID: ${{ steps.get-stack-id.outputs.stack_id }}"
+        RESTART_URL="${{ secrets.PORTAINER_URL }}/api/endpoints/2/docker/containers/${{ steps.get-stack-id.outputs.stack_id }}/restart"
+        RESTART_RESPONSE=$(curl -s -X POST -H "Authorization: Bearer ${{ steps.portainer-login.outputs.jwt }}" $RESTART_URL)
         echo "Restart Response: $RESTART_RESPONSE"
